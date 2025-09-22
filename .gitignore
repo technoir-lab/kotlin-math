@@ -6,6 +6,7 @@ out/
 workspace.xml
 *.versionsBackup
 .gradle/
+.kotlin/
 build/
 !**/src/**/build
 !**/test/**/build
