@@ -1,5 +1,4 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     kotlin("multiplatform") version "2.1.20"
@@ -12,10 +11,6 @@ val VERSION_NAME: String by project
 
 group = GROUP
 version = VERSION_NAME
-
-repositories {
-    mavenCentral()
-}
 
 kotlin {
     jvm()
@@ -63,7 +58,7 @@ dokka {
         reportUndocumented.set(false)
         skipEmptyPackages.set(true)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(17)
 
         // Add Android SDK packages
         enableAndroidDocumentationLink.set(true)
