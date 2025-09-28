@@ -12,10 +12,6 @@ val VERSION_NAME: String by project
 group = GROUP
 version = VERSION_NAME
 
-repositories {
-    mavenCentral()
-}
-
 kotlin {
     jvm()
 
@@ -57,7 +53,7 @@ dokka {
         reportUndocumented.set(false)
         skipEmptyPackages.set(true)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(17)
 
         // Add Android SDK packages
         enableAndroidDocumentationLink.set(true)
