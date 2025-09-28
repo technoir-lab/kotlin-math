@@ -2,6 +2,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     kotlin("multiplatform") version "2.2.20"
+    kotlin("plugin.serialization") version "2.2.20"
     id("org.jetbrains.dokka") version "2.0.0"
     id("com.vanniktech.maven.publish") version "0.31.0"
 }
@@ -40,6 +41,11 @@ kotlin {
     }
 
     sourceSets {
+        commonMain {
+            dependencies {
+                implementation(libs.kotlinx.serialization.core)
+            }
+        }
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
