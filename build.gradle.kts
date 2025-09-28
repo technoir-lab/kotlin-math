@@ -1,4 +1,5 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform") version "2.2.20"
@@ -20,6 +21,9 @@ kotlin {
         browser()
         nodejs()
     }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs { browser() }
 
     // Tier 1
     macosArm64()
