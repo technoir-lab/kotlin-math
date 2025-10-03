@@ -4,7 +4,7 @@ pluginManagement {
         kotlin("plugin.serialization") version "2.2.20"
         id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
         id("org.jetbrains.dokka") version "2.0.0"
-        id("com.vanniktech.maven.publish") version "0.31.0"
+        id("com.vanniktech.maven.publish") version "0.34.0"
     }
 }
 
