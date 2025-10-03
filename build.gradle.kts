@@ -31,6 +31,7 @@ kotlin {
     iosSimulatorArm64()
 
     // Tier 2
+    linuxArm64()
     linuxX64()
     macosX64()
     iosX64()
