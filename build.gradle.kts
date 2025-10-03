@@ -2,10 +2,10 @@ import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
-    kotlin("multiplatform") version "2.2.20"
-    kotlin("plugin.serialization") version "2.2.20"
-    id("org.jetbrains.dokka") version "2.0.0"
-    id("com.vanniktech.maven.publish") version "0.31.0"
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
+    id("org.jetbrains.dokka")
+    id("com.vanniktech.maven.publish")
 }
 
 val GROUP: String by project
