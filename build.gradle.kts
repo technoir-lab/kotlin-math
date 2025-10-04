@@ -1,10 +1,11 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
-    kotlin("multiplatform") version "2.1.20"
-    id("org.jetbrains.dokka") version "2.0.0"
-    id("com.vanniktech.maven.publish") version "0.31.0"
+    kotlin("multiplatform")
+    id("org.jetbrains.dokka")
+    id("com.vanniktech.maven.publish")
 }
 
 val GROUP: String by project
@@ -12,10 +13,6 @@ val VERSION_NAME: String by project
 
 group = GROUP
 version = VERSION_NAME
-
-repositories {
-    mavenCentral()
-}
 
 kotlin {
     jvm()
@@ -66,7 +63,7 @@ dokka {
         reportUndocumented.set(false)
         skipEmptyPackages.set(true)
         skipDeprecated.set(true)
-        jdkVersion.set(8)
+        jdkVersion.set(17)
 
         // Add Android SDK packages
         enableAndroidDocumentationLink.set(true)
@@ -81,9 +78,9 @@ dokka {
     }
 }
 
-val dokkaGeneratePublicationHtml by tasks.getting(org.jetbrains.dokka.gradle.tasks.DokkaGeneratePublicationTask::class)
+val dokkaGeneratePublicationHtml by tasks.getting(DokkaGeneratePublicationTask::class)
 
-val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
+val javadocJar by tasks.registering(Jar::class) {
     dependsOn(dokkaGeneratePublicationHtml)
     archiveClassifier.set("javadoc")
     from(dokkaGeneratePublicationHtml.outputDirectory)
