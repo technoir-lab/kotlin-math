@@ -37,10 +37,9 @@ jobs:
             ${{ runner.os }}-konan-
 
       - name: Publish to Maven Central
-        run: |
-          ./gradlew publishToMavenCentral \
-          -PmavenCentralUsername=${{ secrets.CENTRAL_PORTAL_USER }} \
-          -PmavenCentralPassword=${{ secrets.CENTRAL_PORTAL_PASSWORD }} \
-          -PsigningInMemoryKey=${{ secrets.SIGNING_KEY }} \
-          -PsigningInMemoryKeyPassword=${{ secrets.SIGNING_PASSWORD }} \
-          -PVERSION_NAME=${GITHUB_REF_NAME#v}
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.CENTRAL_PORTAL_USER }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: ./gradlew publishToMavenCentral -PVERSION_NAME=${GITHUB_REF_NAME#v}
