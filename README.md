@@ -1,6 +1,6 @@
 # kotlin-math
 
-[![kotlin-math](https://maven-badges.herokuapp.com/maven-central/dev.romainguy/kotlin-math/badge.svg?subject=kotlin-math)](https://maven-badges-generator.herokuapp.com/maven-central/dev.romainguy/kotlin-math)
+![Maven Central Version](https://img.shields.io/maven-central/v/io.technoirlab/kotlin-math)
 
 Set of Kotlin APIs to make graphics math easier to write. These APIs are mostly
 modeled after GLSL (OpenGL Shading Language) to make porting code to and from
@@ -20,22 +20,15 @@ This project supports multi-platform thanks to [ekgame](https://github.com/ekgam
 ## Maven
 
 ```gradle
-repositories {
-    // ...
-    mavenCentral()
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("io.technoirlab:kotlin-math:<latest version>")
+            }
+        }
+    }
 }
-
-dependencies {
-    implementation 'dev.romainguy:kotlin-math:1.6.0'
-}
-```
-
-## Building the project
-
-Simply run the following command to generate `build/libs/kotlin-math.jar`:
-
-```bash
-$ ./gradlew assemble
 ```
 
 ## Types
