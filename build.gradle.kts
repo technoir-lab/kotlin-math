@@ -58,7 +58,7 @@ dokka {
         reportUndocumented.set(false)
         skipEmptyPackages.set(true)
         skipDeprecated.set(true)
-        jdkVersion.set(17)
+        jdkVersion.set(21)
 
         // Add Android SDK packages
         enableAndroidDocumentationLink.set(true)
