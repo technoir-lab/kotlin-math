@@ -60,14 +60,14 @@ data class Quaternion(
 
     companion object {
         /**
-         * Construct a Quaternion from an axis and angle in degrees
+         * Construct a Quaternion from an axis and angle in radians
          *
          * @param axis Rotation direction
-         * @param angle Angle size in degrees
+         * @param angle Angle size in radians
          */
         fun fromAxisAngle(axis: Float3, angle: Float): Quaternion {
-            val r = radians(angle)
-            return Quaternion(sin(r * 0.5f) * normalize(axis), cos(r * 0.5f))
+            val halfAngle = angle * 0.5f
+            return Quaternion(sin(halfAngle) * normalize(axis), cos(halfAngle))
         }
 
         /**
@@ -79,15 +79,14 @@ data class Quaternion(
          * the world-X axis), then around local-Y (which may now be different from the world
          * Y-axis), then local-Z (which may be different from the world Z-axis)
          *
-         * @param d Per axis Euler angles in degrees
+         * @param d Per axis Euler angles in radians
          * Yaw, pitch, roll (YPR) are taken accordingly to the rotations order input.
          * @param order The order in which to apply rotations.
          * Default is [RotationsOrder.ZYX] which means that the object will first be rotated around
          * its Z axis, then its Y axis and finally its X axis.
          */
         fun fromEuler(d: Float3, order: RotationsOrder = RotationsOrder.ZYX): Quaternion {
-            val r = transform(d, ::radians)
-            return fromEuler(r[order.yaw], r[order.pitch], r[order.roll], order)
+            return fromEuler(d[order.yaw], d[order.pitch], d[order.roll], order)
         }
 
         /**
@@ -174,7 +173,7 @@ data class Quaternion(
                                 else -> crossProd
                             }
                         ),
-                        angle = 180.0f
+                        angle = PI
                     )
                 }
 
@@ -468,7 +467,7 @@ data class Quaternion(
     }
 
     /**
-     * Converts this quaternion to Euler angles (in degrees).
+     * Converts this quaternion to Euler angles (in radians).
      */
     fun toEulerAngles() = eulerAngles(this)
 
@@ -793,7 +792,7 @@ fun nlerp(a: Quaternion, b: Quaternion, t: Float): Quaternion {
 }
 
 /**
- * Convert a Quaternion to Euler angles
+ * Convert a Quaternion to Euler angles in radians
  *
  * @param order The order in which to apply rotations.
  * Default is [RotationsOrder.ZYX] which means that the object will first be rotated around its Z

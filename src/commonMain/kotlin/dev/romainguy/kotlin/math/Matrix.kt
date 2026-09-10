@@ -562,7 +562,7 @@ data class Mat4(
         get() = w.xyz
 
     /**
-     * The rotation of the matrix as Euler angles (in degrees).
+     * The rotation of the matrix as Euler angles (in radians).
      */
     val rotation: Float3
         get() {
@@ -571,10 +571,10 @@ data class Mat4(
             val z = normalize(forward)
 
             return when {
-                z.y <= -1.0f -> Float3(degrees(-HALF_PI), 0.0f, degrees(atan2( x.z,  y.z)))
-                z.y >=  1.0f -> Float3(degrees( HALF_PI), 0.0f, degrees(atan2(-x.z, -y.z)))
+                z.y <= -1.0f -> Float3(-HALF_PI, 0.0f, atan2( x.z,  y.z))
+                z.y >=  1.0f -> Float3( HALF_PI, 0.0f, atan2(-x.z, -y.z))
                 else -> Float3(
-                        degrees(-asin(z.y)), degrees(-atan2(z.x, z.z)), degrees(atan2( x.y,  y.y)))
+                        -asin(z.y), -atan2(z.x, z.z), atan2( x.y,  y.y))
             }
         }
 
@@ -747,7 +747,7 @@ data class Mat4(
     )
 
     /**
-     * Get the Euler angles in degrees from this rotation Matrix
+     * Get the Euler angles in radians from this rotation Matrix
      *
      * Don't forget to extract the rotation with [rotation] if this is a transposed matrix
      *
@@ -1066,7 +1066,7 @@ fun rotation(m: Mat4) = Mat4(normalize(m.right), normalize(m.up), normalize(m.fo
  * world-X axis), then around local-Y (which may now be different from the world Y-axis),
  * then local-Z (which may be different from the world Z-axis)
  *
- * @param d Per axis Euler angles in degrees
+ * @param d Per axis Euler angles in radians
  * Yaw, pitch, roll (YPR) are taken accordingly to the rotations order input.
  * @param order The order in which to apply rotations.
  * Default is [RotationsOrder.ZYX] which means that the object will first be rotated around its Z
@@ -1075,8 +1075,7 @@ fun rotation(m: Mat4) = Mat4(normalize(m.right), normalize(m.up), normalize(m.fo
  * @return The rotation matrix
  */
 fun rotation(d: Float3, order: RotationsOrder = RotationsOrder.ZYX): Mat4 {
-    val r = transform(d, ::radians)
-    return rotation(r[order.yaw], r[order.pitch], r[order.roll], order)
+    return rotation(d[order.yaw], d[order.pitch], d[order.roll], order)
 }
 
 /**
@@ -1134,10 +1133,10 @@ fun rotation(yaw: Float = 0.0f, pitch: Float = 0.0f, roll: Float = 0.0f, order: 
 }
 
 /**
- * Construct a rotation matrix from an [axis] and an [angle] in degrees.
+ * Construct a rotation matrix from an [axis] and an [angle] in radians.
  *
  * @param axis The rotation axis (should be normalized).
- * @param angle The rotation angle in degrees.
+ * @param angle The rotation angle in radians.
  * @return The rotation matrix.
  */
 fun rotation(axis: Float3, angle: Float): Mat4 {
@@ -1145,9 +1144,8 @@ fun rotation(axis: Float3, angle: Float): Mat4 {
     val y = axis.y
     val z = axis.z
 
-    val r = radians(angle)
-    val c = cos(r)
-    val s = sin(r)
+    val c = cos(angle)
+    val s = sin(angle)
     val d = 1.0f - c
 
     return Mat4.of(
@@ -1187,7 +1185,7 @@ fun rotation(quaternion: Quaternion): Mat4 {
 }
 
 /**
- * Get the Euler angles in degrees from a rotation Matrix
+ * Get the Euler angles in radians from a rotation Matrix
  *
  * @param m The rotation matrix.
  * Don't forget to extract the rotation with [rotation] if it's transposed
@@ -1197,7 +1195,7 @@ fun rotation(quaternion: Quaternion): Mat4 {
  */
 fun eulerAngles(m: Mat4, order: RotationsOrder = RotationsOrder.ZYX): Float3 {
     // We need to more simplify this with RotationsOrder VectorComponents mapped to MatrixColumn
-    return transform(Float3().apply {
+    return Float3().apply {
         when (order) {
             RotationsOrder.XYZ -> {
                 this[order.pitch] = asin(clamp(m.z.x, -1.0f, 1.0f))
@@ -1260,7 +1258,7 @@ fun eulerAngles(m: Mat4, order: RotationsOrder = RotationsOrder.ZYX): Float3 {
                 }
             }
         }
-    }, ::degrees)
+    }
 }
 
 /**
@@ -1395,10 +1393,10 @@ fun lookTowards(eye: Float3, forward: Float3, up: Float3 = Float3(z = 1.0f)): Ma
  * Equivalent to [perspectiveRH]; the camera looks along its negative Z axis.
  * The near and far clipping planes map to normalized device depths 0 and 1, respectively.
  *
- * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * All arguments must be finite, with `0 < fov < PI`, `ratio > 0`, and positive, distinct
  * clipping-plane distances.
  *
- * @param fov The vertical field of view in degrees.
+ * @param fov The vertical field of view in radians.
  * @param ratio The aspect ratio (width / height).
  * @param near The distance to the near clipping plane.
  * @param far The distance to the far clipping plane.
@@ -1412,16 +1410,16 @@ fun perspective(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
  * The camera looks along its negative Z axis. The near and far clipping planes map to
  * normalized device depths 0 and 1, respectively.
  *
- * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * All arguments must be finite, with `0 < fov < PI`, `ratio > 0`, and positive, distinct
  * clipping-plane distances.
  *
- * @param fov The vertical field of view in degrees.
+ * @param fov The vertical field of view in radians.
  * @param ratio The aspect ratio (width / height).
  * @param near The distance to the near clipping plane.
  * @param far The distance to the far clipping plane.
  */
 fun perspectiveRH(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
-    val tanHalfFov = tan(radians(fov) * 0.5f)
+    val tanHalfFov = tan(fov * 0.5f)
     return Mat4(
         Float4(x = 1.0f / (ratio * tanHalfFov)),
         Float4(y = 1.0f / tanHalfFov),
@@ -1435,16 +1433,16 @@ fun perspectiveRH(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
  * The camera looks along its positive Z axis. The near and far clipping planes map to
  * normalized device depths 0 and 1, respectively.
  *
- * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * All arguments must be finite, with `0 < fov < PI`, `ratio > 0`, and positive, distinct
  * clipping-plane distances.
  *
- * @param fov The vertical field of view in degrees.
+ * @param fov The vertical field of view in radians.
  * @param ratio The aspect ratio (width / height).
  * @param near The distance to the near clipping plane.
  * @param far The distance to the far clipping plane.
  */
 fun perspectiveLH(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
-    val tanHalfFov = tan(radians(fov) * 0.5f)
+    val tanHalfFov = tan(fov * 0.5f)
     return Mat4(
         Float4(x = 1.0f / (ratio * tanHalfFov)),
         Float4(y = 1.0f / tanHalfFov),
