@@ -577,20 +577,111 @@ class MatrixTest {
 
     @Test
     fun perspective() {
-        assertArrayEquals(
+        val result = perspective(fov = 60f, ratio = 2f, near = 0.1f, far = 100f)
+
+        assertMatEquals(perspectiveRH(fov = 60f, ratio = 2f, near = 0.1f, far = 100f), result)
+    }
+
+    @Test
+    fun perspectiveRH() {
+        val result = perspectiveRH(fov = 90f, ratio = 2f, near = 1f, far = 11f)
+
+        assertMatEquals(
             Mat4(
-                Float4(57.2943f, 0.0f, 0.0f, 0.0f),
-                Float4(0.0f, 114.5886f, 0.0f, 0.0f),
-                Float4(0.0f, 0.0f, -7.0f, 1.0f),
-                Float4(0.0f, 0.0f, 24.0f, 0.0f)
-            ).toFloatArray(),
-            perspective(
-                fov = 1f,
-                ratio = 2f,
-                far = 3f,
-                near = 4f,
-            ).toFloatArray()
+                Float4(x = 0.5f),
+                Float4(y = 1f),
+                Float4(z = -1.1f, w = -1f),
+                Float4(z = -1.1f)
+            ),
+            result
         )
+    }
+
+    @Test
+    fun perspectiveLH() {
+        val result = perspectiveLH(fov = 90f, ratio = 2f, near = 1f, far = 11f)
+
+        assertMatEquals(
+            Mat4(
+                Float4(x = 0.5f),
+                Float4(y = 1f),
+                Float4(z = 1.1f, w = 1f),
+                Float4(z = -1.1f)
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun perspectiveMapsFrustumCornersToZeroOneDepth() {
+        val clippingPlanes = listOf(1f to 11f, 0.1f to 100f, 0.001f to 10000f, 10f to 1f)
+
+        for ((near, far) in clippingPlanes) {
+            val projections = listOf(
+                perspective(90f, 2f, near, far) to -1f,
+                perspectiveRH(90f, 2f, near, far) to -1f,
+                perspectiveLH(90f, 2f, near, far) to 1f,
+            )
+
+            for ((projection, direction) in projections) {
+                for ((distance, depth) in listOf(near to 0f, far to 1f)) {
+                    for (x in listOf(-1f, 1f)) {
+                        for (y in listOf(-1f, 1f)) {
+                            val point = Float4(x * 2f * distance, y * distance, direction * distance, 1f)
+                            val clip = projection * point
+                            val ndc = clip.xyz / clip.w
+
+                            assertEquals(distance, clip.w, ABSOLUTE_TOLERANCE)
+                            assertArrayEquals(Float3(x, y, depth).toFloatArray(), ndc.toFloatArray())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun perspectiveClipsPointsOutsideDepthRange() {
+        val projections = listOf(
+            perspective(60f, 1f, 1f, 10f) to -1f,
+            perspectiveRH(60f, 1f, 1f, 10f) to -1f,
+            perspectiveLH(60f, 1f, 1f, 10f) to 1f,
+        )
+
+        for ((projection, direction) in projections) {
+            val beforeNear = projection * Float4(z = direction * 0.5f, w = 1f)
+            val beyondFar = projection * Float4(z = direction * 20f, w = 1f)
+            val behindCamera = projection * Float4(z = -direction, w = 1f)
+
+            assertTrue(beforeNear.z < 0f)
+            assertTrue(beyondFar.z > beyondFar.w)
+            assertTrue(behindCamera.w < 0f)
+        }
+    }
+
+    @Test
+    fun perspectivePairsWithMatchingLookAtHandedness() {
+        val eye = Float3(1f, -2f, 3f)
+        val forward = Float3(0.6f, 0f, -0.8f)
+        val target = eye + forward
+        val near = 0.5f
+        val far = 20f
+
+        val viewProjections = listOf(
+            perspective(60f, 2f, near, far) * lookAt(eye, target),
+            perspectiveRH(60f, 2f, near, far) * lookAtRH(eye, target),
+            perspectiveLH(60f, 2f, near, far) * lookAtLH(eye, target),
+        )
+
+        for (viewProjection in viewProjections) {
+            for ((distance, depth) in listOf(near to 0f, far to 1f)) {
+                val clip = viewProjection * Float4(eye + forward * distance, 1f)
+                val ndc = clip.xyz / clip.w
+
+                assertEquals(distance, clip.w, ABSOLUTE_TOLERANCE)
+                assertArrayEquals(Float3(z = depth).toFloatArray(), ndc.toFloatArray())
+            }
+        }
     }
 
     @Test

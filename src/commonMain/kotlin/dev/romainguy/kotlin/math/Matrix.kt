@@ -1391,7 +1391,12 @@ fun lookTowards(eye: Float3, forward: Float3, up: Float3 = Float3(z = 1.0f)): Ma
 }
 
 /**
- * Returns a perspective projection matrix.
+ * Returns a right-handed perspective projection matrix with zero-to-one depth.
+ * Equivalent to [perspectiveRH]; the camera looks along its negative Z axis.
+ * The near and far clipping planes map to normalized device depths 0 and 1, respectively.
+ *
+ * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * clipping-plane distances.
  *
  * @param fov The vertical field of view in degrees.
  * @param ratio The aspect ratio (width / height).
@@ -1399,11 +1404,53 @@ fun lookTowards(eye: Float3, forward: Float3, up: Float3 = Float3(z = 1.0f)): Ma
  * @param far The distance to the far clipping plane.
  */
 fun perspective(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
-    val t = 1.0f / tan(radians(fov) * 0.5f)
-    val a = (far + near) / (far - near)
-    val b = (2.0f * far * near) / (far - near)
-    val c = t / ratio
-    return Mat4(Float4(x = c), Float4(y = t), Float4(z = a, w = 1.0f), Float4(z = -b))
+    return perspectiveRH(fov, ratio, near, far)
+}
+
+/**
+ * Returns a right-handed perspective projection matrix with zero-to-one depth.
+ * The camera looks along its negative Z axis. The near and far clipping planes map to
+ * normalized device depths 0 and 1, respectively.
+ *
+ * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * clipping-plane distances.
+ *
+ * @param fov The vertical field of view in degrees.
+ * @param ratio The aspect ratio (width / height).
+ * @param near The distance to the near clipping plane.
+ * @param far The distance to the far clipping plane.
+ */
+fun perspectiveRH(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
+    val tanHalfFov = tan(radians(fov) * 0.5f)
+    return Mat4(
+        Float4(x = 1.0f / (ratio * tanHalfFov)),
+        Float4(y = 1.0f / tanHalfFov),
+        Float4(z = far / (near - far), w = -1.0f),
+        Float4(z = -(far * near) / (far - near))
+    )
+}
+
+/**
+ * Returns a left-handed perspective projection matrix with zero-to-one depth.
+ * The camera looks along its positive Z axis. The near and far clipping planes map to
+ * normalized device depths 0 and 1, respectively.
+ *
+ * All arguments must be finite, with `0 < fov < 180`, `ratio > 0`, and positive, distinct
+ * clipping-plane distances.
+ *
+ * @param fov The vertical field of view in degrees.
+ * @param ratio The aspect ratio (width / height).
+ * @param near The distance to the near clipping plane.
+ * @param far The distance to the far clipping plane.
+ */
+fun perspectiveLH(fov: Float, ratio: Float, near: Float, far: Float): Mat4 {
+    val tanHalfFov = tan(radians(fov) * 0.5f)
+    return Mat4(
+        Float4(x = 1.0f / (ratio * tanHalfFov)),
+        Float4(y = 1.0f / tanHalfFov),
+        Float4(z = far / (far - near), w = 1.0f),
+        Float4(z = -(far * near) / (far - near))
+    )
 }
 
 /**
