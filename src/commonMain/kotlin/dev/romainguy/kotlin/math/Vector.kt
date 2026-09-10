@@ -1181,9 +1181,11 @@ inline fun Float.compareTo(v: Float, delta: Float): Float = when {
 }
 
 /**
- * Returns true if this [Float] is equal to [v] within [delta].
+ * Returns true if this value equals [v] or their absolute difference is less than [delta].
+ * A zero tolerance requires exact equality. Equal infinities and signed zeros compare equal;
+ * NaN never compares equal. A positive tolerance uses a strict boundary.
  */
-inline fun Float.equals(v: Float, delta: Float) = (this - v).absoluteValue < delta
+inline fun Float.equals(v: Float, delta: Float) = this == v || (this - v).absoluteValue < delta
 /**
  * Returns the absolute value of the given vector [v].
  */
@@ -1332,7 +1334,7 @@ inline fun greaterThan(a: Float2, b: Float) = Bool2(a.x > b, a.y > b)
 /**
  * Returns a [Bool2] indicating if each component of [a] is greater than the corresponding component of [b].
  */
-inline fun greaterThan(a: Float2, b: Float2) = Bool2(a.x > b.y, a.y > b.y)
+inline fun greaterThan(a: Float2, b: Float2) = Bool2(a.x > b.x, a.y > b.y)
 
 /**
  * Returns a [Bool2] indicating if each component of [a] is greater than or equal to [b].
@@ -1632,7 +1634,145 @@ inline fun max(a: Float3, b: Float3) = Float3(max(a.x, b.x), max(a.y, b.y), max(
  */
 inline fun transform(v: Float3, block: (Float) -> Float) = v.copy().transform(block)
 
-// Boolean functions omitted for brevity
+/**
+ * Returns a [Bool3] indicating which components are less than [b].
+ */
+inline fun lessThan(a: Float3, b: Float) = Bool3(a.x < b, a.y < b, a.z < b)
+
+/**
+ * Returns a [Bool3] indicating which components are less than [b].
+ */
+inline fun lessThan(a: Float3, b: Float3) = Bool3(a.x < b.x, a.y < b.y, a.z < b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are less than or equal to [b].
+ */
+inline fun lessThanEqual(a: Float3, b: Float) = Bool3(a.x <= b, a.y <= b, a.z <= b)
+
+/**
+ * Returns a [Bool3] indicating which components are less than or equal to [b].
+ */
+inline fun lessThanEqual(a: Float3, b: Float3) = Bool3(a.x <= b.x, a.y <= b.y, a.z <= b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than [b].
+ */
+inline fun greaterThan(a: Float3, b: Float) = Bool3(a.x > b, a.y > b, a.z > b)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than [b].
+ */
+inline fun greaterThan(a: Float3, b: Float3) = Bool3(a.x > b.x, a.y > b.y, a.z > b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than or equal to [b].
+ */
+inline fun greaterThanEqual(a: Float3, b: Float) = Bool3(a.x >= b, a.y >= b, a.z >= b)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than or equal to [b].
+ */
+inline fun greaterThanEqual(a: Float3, b: Float3) = Bool3(a.x >= b.x, a.y >= b.y, a.z >= b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are equal to [b].
+ * Uses [delta] as a strict absolute tolerance in addition to exact equality.
+ */
+inline fun equal(a: Float3, b: Float, delta: Float = 0.0f) = Bool3(
+    a.x.equals(b, delta),
+    a.y.equals(b, delta),
+    a.z.equals(b, delta)
+)
+
+/**
+ * Returns a [Bool3] indicating which components are equal to [b].
+ * Uses [delta] as a strict absolute tolerance in addition to exact equality.
+ */
+inline fun equal(a: Float3, b: Float3, delta: Float = 0.0f) = Bool3(
+    a.x.equals(b.x, delta),
+    a.y.equals(b.y, delta),
+    a.z.equals(b.z, delta)
+)
+
+/**
+ * Returns a [Bool3] indicating which components are not equal to [b].
+ * Uses [delta] as a strict absolute tolerance in addition to exact equality.
+ */
+inline fun notEqual(a: Float3, b: Float, delta: Float = 0.0f) = Bool3(
+    !a.x.equals(b, delta),
+    !a.y.equals(b, delta),
+    !a.z.equals(b, delta)
+)
+
+/**
+ * Returns a [Bool3] indicating which components are not equal to [b].
+ * Uses [delta] as a strict absolute tolerance in addition to exact equality.
+ */
+inline fun notEqual(a: Float3, b: Float3, delta: Float = 0.0f) = Bool3(
+    !a.x.equals(b.x, delta),
+    !a.y.equals(b.y, delta),
+    !a.z.equals(b.z, delta)
+)
+
+/**
+ * Returns a [Bool3] indicating which components are less than [b].
+ */
+inline infix fun Float3.lt(b: Float) = Bool3(x < b, y < b, z < b)
+
+/**
+ * Returns a [Bool3] indicating which components are less than [b].
+ */
+inline infix fun Float3.lt(b: Float3) = Bool3(x < b.x, y < b.y, z < b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are less than or equal to [b].
+ */
+inline infix fun Float3.lte(b: Float) = Bool3(x <= b, y <= b, z <= b)
+
+/**
+ * Returns a [Bool3] indicating which components are less than or equal to [b].
+ */
+inline infix fun Float3.lte(b: Float3) = Bool3(x <= b.x, y <= b.y, z <= b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than [b].
+ */
+inline infix fun Float3.gt(b: Float) = Bool3(x > b, y > b, z > b)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than [b].
+ */
+inline infix fun Float3.gt(b: Float3) = Bool3(x > b.x, y > b.y, z > b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than or equal to [b].
+ */
+inline infix fun Float3.gte(b: Float) = Bool3(x >= b, y >= b, z >= b)
+
+/**
+ * Returns a [Bool3] indicating which components are greater than or equal to [b].
+ */
+inline infix fun Float3.gte(b: Float3) = Bool3(x >= b.x, y >= b.y, z >= b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are equal to [b].
+ */
+inline infix fun Float3.eq(b: Float) = Bool3(x == b, y == b, z == b)
+
+/**
+ * Returns a [Bool3] indicating which components are equal to [b].
+ */
+inline infix fun Float3.eq(b: Float3) = Bool3(x == b.x, y == b.y, z == b.z)
+
+/**
+ * Returns a [Bool3] indicating which components are not equal to [b].
+ */
+inline infix fun Float3.neq(b: Float) = Bool3(x != b, y != b, z != b)
+
+/**
+ * Returns a [Bool3] indicating which components are not equal to [b].
+ */
+inline infix fun Float3.neq(b: Float3) = Bool3(x != b.x, y != b.y, z != b.z)
 
 /**
  * Returns the absolute value of the given vector [v].
@@ -1772,7 +1912,7 @@ inline fun greaterThan(a: Float4, b: Float) = Bool4(a.x > b, a.y > b, a.z > b, a
 /**
  * Returns a [Bool4] indicating if each component of [a] is greater than the corresponding component of [b].
  */
-inline fun greaterThan(a: Float4, b: Float4) = Bool4(a.x > b.y, a.y > b.y, a.z > b.z, a.w > b.w)
+inline fun greaterThan(a: Float4, b: Float4) = Bool4(a.x > b.x, a.y > b.y, a.z > b.z, a.w > b.w)
 
 /**
  * Returns a [Bool4] indicating if each component of [a] is greater than or equal to [b].
@@ -3731,7 +3871,7 @@ inline fun greaterThan(a: Half2, b: Half) = Bool2(a.x > b, a.y > b)
 /**
  * Returns a [Bool2] indicating if each component of [a] is greater than the corresponding component of [b].
  */
-inline fun greaterThan(a: Half2, b: Half2) = Bool2(a.x > b.y, a.y > b.y)
+inline fun greaterThan(a: Half2, b: Half2) = Bool2(a.x > b.x, a.y > b.y)
 
 /**
  * Returns a [Bool2] indicating if each component of [a] is greater than or equal to [b].
@@ -3999,7 +4139,7 @@ inline fun greaterThan(a: Half3, b: Half) = Bool3(a.x > b, a.y > b, a.z > b)
 /**
  * Returns a [Bool3] indicating if each component of [a] is greater than the corresponding component of [b].
  */
-inline fun greaterThan(a: Half3, b: Half3) = Bool3(a.x > b.y, a.y > b.y, a.z > b.z)
+inline fun greaterThan(a: Half3, b: Half3) = Bool3(a.x > b.x, a.y > b.y, a.z > b.z)
 
 /**
  * Returns a [Bool3] indicating if each component of [a] is greater than or equal to [b].
@@ -4248,7 +4388,7 @@ inline fun greaterThan(a: Half4, b: Half) = Bool4(a.x > b, a.y > b, a.z > b, a.w
 /**
  * Returns a [Bool4] indicating if each component of [a] is greater than the corresponding component of [b].
  */
-inline fun greaterThan(a: Half4, b: Half4) = Bool4(a.x > b.y, a.y > b.y, a.z > b.z, a.w > b.w)
+inline fun greaterThan(a: Half4, b: Half4) = Bool4(a.x > b.x, a.y > b.y, a.z > b.z, a.w > b.w)
 
 /**
  * Returns a [Bool4] indicating if each component of [a] is greater than or equal to [b].
