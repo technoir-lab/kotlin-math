@@ -1319,14 +1319,61 @@ fun quaternion(m: Mat4): Quaternion {
 fun normal(m: Mat4) = scale(1.0f / Float3(length2(m.right), length2(m.up), length2(m.forward))) * m
 
 /**
- * Returns a view matrix looking from [eye] towards [target].
+ * Returns a right-handed world-to-camera view matrix looking from [eye] towards [target].
+ * Equivalent to [lookAtRH]; the camera looks along its negative Z axis.
+ *
+ * [eye] and [target] must differ, and [up] must be nonzero and not parallel to the viewing direction.
  *
  * @param eye The position of the eye/camera.
  * @param target The position to look at.
  * @param up The up vector of the camera (default is Z-up).
  */
 fun lookAt(eye: Float3, target: Float3, up: Float3 = Float3(z = 1.0f)): Mat4 {
-    return lookTowards(eye, target - eye, up)
+    return lookAtRH(eye, target, up)
+}
+
+/**
+ * Returns a right-handed world-to-camera view matrix looking from [eye] towards [target].
+ * The camera looks along its negative Z axis.
+ *
+ * [eye] and [target] must differ, and [up] must be nonzero and not parallel to the viewing direction.
+ *
+ * @param eye The position of the eye/camera.
+ * @param target The position to look at.
+ * @param up The up vector of the camera (default is Z-up).
+ */
+fun lookAtRH(eye: Float3, target: Float3, up: Float3 = Float3(z = 1.0f)): Mat4 {
+    val f = normalize(target - eye)
+    val r = normalize(f x up)
+    val u = r x f
+    return Mat4(
+        Float4(r.x, u.x, -f.x),
+        Float4(r.y, u.y, -f.y),
+        Float4(r.z, u.z, -f.z),
+        Float4(-dot(r, eye), -dot(u, eye), dot(f, eye), 1.0f)
+    )
+}
+
+/**
+ * Returns a left-handed world-to-camera view matrix looking from [eye] towards [target].
+ * The camera looks along its positive Z axis.
+ *
+ * [eye] and [target] must differ, and [up] must be nonzero and not parallel to the viewing direction.
+ *
+ * @param eye The position of the eye/camera.
+ * @param target The position to look at.
+ * @param up The up vector of the camera (default is Z-up).
+ */
+fun lookAtLH(eye: Float3, target: Float3, up: Float3 = Float3(z = 1.0f)): Mat4 {
+    val f = normalize(target - eye)
+    val r = normalize(up x f)
+    val u = f x r
+    return Mat4(
+        Float4(r.x, u.x, f.x),
+        Float4(r.y, u.y, f.y),
+        Float4(r.z, u.z, f.z),
+        Float4(-dot(r, eye), -dot(u, eye), -dot(f, eye), 1.0f)
+    )
 }
 
 /**

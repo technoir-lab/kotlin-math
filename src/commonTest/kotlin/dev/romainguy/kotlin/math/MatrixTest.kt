@@ -451,19 +451,111 @@ class MatrixTest {
 
     @Test
     fun lookAt() {
+        val eye = Float3(1f, 2f, 3f)
+        val target = Float3(9f, 5.5f, -2f)
+        val up = Float3(3f, 4f, 5f)
+
+        val result = lookAt(eye, target, up)
+
+        assertMatEquals(lookAtRH(eye, target, up), result)
+    }
+
+    @Test
+    fun lookAtDefaultsToZUp() {
+        val eye = Float3(1f, 2f, 3f)
+        val target = Float3(9f, 5.5f, -2f)
+        val up = Float3(z = 1f)
+
+        val view = lookAt(eye, target)
+        val rightHandedView = lookAtRH(eye, target)
+        val leftHandedView = lookAtLH(eye, target)
+
+        assertMatEquals(lookAtRH(eye, target, up), view)
+        assertMatEquals(view, rightHandedView)
+        assertMatEquals(lookAtLH(eye, target, up), leftHandedView)
+    }
+
+    @Test
+    fun lookAtRH() {
+        val eye = Float3(1f, 2f, 3f)
+        val target = Float3(9f, 5.5f, -2f)
+        val up = Float3(3f, 4f, 5f)
+
+        val result = lookAtRH(eye, target, up)
+
         assertMatEquals(
             Mat4(
-                Float4(0.53606f, -0.7862f, 0.30734f, 0.0f),
-                Float4(0.28377f, 0.51073f, 0.81155f, 0.0f),
-                Float4(-0.79504f, -0.34783f, 0.4969f, 0.0f),
-                Float4(1.0f, 2.0f, 3.0f, 1.0f),
+                Float4(0.5360700f, 0.2837785f, -0.7950464f, 0.0f),
+                Float4(-0.7862359f, 0.5107303f, -0.3478328f, 0.0f),
+                Float4(0.3073468f, 0.8115568f, 0.4969040f, 0.0f),
+                Float4(0.1143616f, -3.7399093f, 0.0f, 1.0f),
             ),
-            lookAt(
-                eye = Float3(1f, 2f, 3f),
-                target = Float3(9f, 5.5f, -2f),
-                up = Float3(3f, 4f, 5f)
-            )
+            result
         )
+    }
+
+    @Test
+    fun lookAtLH() {
+        val eye = Float3(1f, 2f, 3f)
+        val target = Float3(9f, 5.5f, -2f)
+        val up = Float3(3f, 4f, 5f)
+
+        val result = lookAtLH(eye, target, up)
+
+        assertMatEquals(
+            Mat4(
+                Float4(-0.5360700f, 0.2837785f, 0.7950464f, 0.0f),
+                Float4(0.7862359f, 0.5107303f, 0.3478328f, 0.0f),
+                Float4(-0.3073468f, 0.8115568f, -0.4969040f, 0.0f),
+                Float4(-0.1143616f, -3.7399093f, 0.0f, 1.0f),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun lookAtTransformsWorldPointsToCameraSpace() {
+        val eye = Float3(1f, -2f, 3f)
+        val targets = listOf(
+            eye + Float3(x = 5f),
+            eye + Float3(y = -5f),
+            eye + Float3(z = 5f),
+            Float3(-4f, 3f, 1f),
+        )
+        val up = Float3(2f, 3f, 4f)
+
+        for (target in targets) {
+            val views = listOf(
+                lookAt(eye, target, up) to -1f,
+                lookAtRH(eye, target, up) to -1f,
+                lookAtLH(eye, target, up) to 1f,
+            )
+
+            for ((view, direction) in views) {
+                assertArrayEquals(
+                    Float4(w = 1f).toFloatArray(),
+                    (view * Float4(eye, 1f)).toFloatArray()
+                )
+                assertArrayEquals(
+                    Float4(z = direction * length(target - eye), w = 1f).toFloatArray(),
+                    (view * Float4(target, 1f)).toFloatArray()
+                )
+                assertEquals(1f, dot(view.x.xyz, view.y.xyz x view.z.xyz), ABSOLUTE_TOLERANCE)
+            }
+        }
+    }
+
+    @Test
+    fun lookAtHandlesNearlyParallelUp() {
+        val eye = Float3()
+        val target = Float3(z = 1f)
+        val up = Float3(y = 0.0001f, z = 1f)
+
+        val rightHandedView = lookAtRH(eye, target, up)
+        val leftHandedView = lookAtLH(eye, target, up)
+
+        assertMatEquals(scale(Float3(-1f, 1f, -1f)), rightHandedView)
+        assertMatEquals(Mat4(), leftHandedView)
     }
 
     @Test
