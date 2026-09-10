@@ -44,4 +44,4 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
-        run: ./gradlew publishToMavenCentral -PVERSION_NAME=${GITHUB_REF_NAME#v}
+        run: ./gradlew publishToMavenCentral -PVERSION_NAME="${GITHUB_REF_NAME#v}"
