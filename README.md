@@ -21,11 +21,14 @@ This project supports multi-platform thanks to [ekgame](https://github.com/ekgam
 
 This fork differs from the [upstream implementation](https://github.com/romainguy/kotlin-math/blob/main/src/commonMain/kotlin/dev/romainguy/kotlin/math/Matrix.kt):
 
+- Angle inputs and outputs use radians, following GLM. Upstream uses degrees for
+  perspective FOV, axis-angle and vector Euler constructors, and Euler-angle
+  outputs. Use `radians()` and `degrees()` for explicit conversions.
 - `lookAt` returns a right-handed world-to-camera view matrix; upstream returns
   a camera-to-world transform. Explicit `lookAtRH` and `lookAtLH` variants are available.
 - `perspective` defaults to right-handed coordinates and maps near/far depth to
   `[0, 1]`; upstream uses left-handed coordinates and `[-1, 1]`. Both
-  `perspectiveRH` and `perspectiveLH` use `[0, 1]` depth. FOV remains in degrees.
+  `perspectiveRH` and `perspectiveLH` use `[0, 1]` depth.
 
 ## Maven
 
@@ -223,26 +226,29 @@ parallel to the viewing direction.
 `perspective` and `perspectiveRH` create right-handed projections and pair with
 `lookAt` and `lookAtRH`. `perspectiveLH` pairs with `lookAtLH`. All three map the
 near and far clipping planes to normalized device depths 0 and 1, respectively.
-The vertical field of view is in degrees, and the aspect ratio is width / height.
+The vertical field of view is in radians, and the aspect ratio is width / height.
 
 ```kotlin
-val projection = perspective(fov = 60.0f, ratio = 16.0f / 9.0f, near = 0.1f, far = 100.0f)
+val projection = perspective(fov = radians(60.0f), ratio = 16.0f / 9.0f, near = 0.1f, far = 100.0f)
 val clipSpacePoint = projection * view * Float4(worldSpacePoint, 1.0f)
 val normalizedDevicePoint = clipSpacePoint.xyz / clipSpacePoint.w
 ```
 
 ## Quaternions and rotations
 
-Construct a Euler angles rotation matrix using per-axis angles in degrees:
+All rotation angle inputs and Euler-angle outputs use radians, including the
+vector and scalar overloads of `rotation` and `Quaternion.fromEuler`.
+
+Construct an Euler angles rotation matrix using per-axis angles in radians:
 
 ```kotlin
-rotationMatrix = rotation(d = Float3(y = 90.0f)) // rotation of 90° around y axis
+rotationMatrix = rotation(d = Float3(y = HALF_PI)) // rotation of 90° around y axis
 ```
 
-Construct a Euler angles rotation matrix using an axis direction and an angle in degrees:
+Construct a rotation matrix using an axis direction and an angle in radians:
 
 ```kotlin
-rotationMatrix = rotation(axis = Float3(y = 1.0f), angle = 90.0f) // rotation of 90° around y axis
+rotationMatrix = rotation(axis = Float3(y = 1.0f), angle = HALF_PI) // rotation of 90° around y axis
 ```
 
 Construct a quaternion rotation matrix following the Hamilton convention (assumes the

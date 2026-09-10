@@ -287,7 +287,7 @@ class MatrixTest {
                 Float4(0.0358f, -0.0156f, 0.9992f, 0f),
                 Float4(0f, 0f, 0f, 1f)
             ).toFloatArray(),
-            rotation(Float3(1f, 2f, 3f)).toFloatArray()
+            rotation(Float3(radians(1f), radians(2f), radians(3f))).toFloatArray()
         )
     }
 
@@ -313,7 +313,7 @@ class MatrixTest {
                     Float4(0.0349f, -0.0174f, 0.9992f, 0f),
                     Float4(0f, 0f, 0f, 1f),
                 ).toFloatArray(),
-                rotation(Float3(1f, 2f, 3f), order = RotationsOrder.XYZ).toFloatArray()
+                rotation(Float3(radians(1f), radians(2f), radians(3f)), order = RotationsOrder.XYZ).toFloatArray()
         )
     }
 
@@ -326,7 +326,7 @@ class MatrixTest {
                     Float4(0.0358f, -0.0156f, 0.9992f, 0f),
                     Float4(0f, 0f, 0f, 1f),
                 ).toFloatArray(),
-                rotation(Float3(1f, 2f, 3f), order = RotationsOrder.ZYX).toFloatArray()
+                rotation(Float3(radians(1f), radians(2f), radians(3f)), order = RotationsOrder.ZYX).toFloatArray()
         )
     }
 
@@ -339,17 +339,17 @@ class MatrixTest {
                 Float4(5f, 5f, 9f, 0f),
                 Float4(0f, 0f, 0f, 1f)
             ).toFloatArray(),
-            rotation(Float3(1f, 2f, 3f), 90f).toFloatArray()
+            rotation(Float3(1f, 2f, 3f), HALF_PI).toFloatArray()
         )
     }
 
     @Test
     fun eulerXYZ() {
         assertArrayEquals(
-            Float3(10.0f,90.0f,0.0f).toFloatArray(),
+            Float3(radians(10f), HALF_PI, 0f).toFloatArray(),
             eulerAngles(
                 rotation(
-                    Float3(10.0f,90.0f,0.0f)
+                    Float3(radians(10f), HALF_PI, 0f)
                     , RotationsOrder.XYZ
                 )
                 , RotationsOrder.XYZ
@@ -361,10 +361,10 @@ class MatrixTest {
     fun eulerZYX() {
         assertArrayEquals(
             // CQFD: That's why Quaternion exist
-            Float3(0.0f, 90.0f, -10.0f).toFloatArray(),
+            Float3(0f, HALF_PI, radians(-10f)).toFloatArray(),
             eulerAngles(
                 rotation(
-                    Float3(10.0f,90.0f,0.0f)
+                    Float3(radians(10f), HALF_PI, 0f)
                     , RotationsOrder.ZYX
                 )
                 , RotationsOrder.ZYX
@@ -375,7 +375,7 @@ class MatrixTest {
     @Test
     fun eulerXYZRotation() {
         assertArrayEquals(
-            Float3(1f, 2f, 3f).toFloatArray(),
+            Float3(radians(1f), radians(2f), radians(3f)).toFloatArray(),
             eulerAngles(
                 Mat4(
                     Float4(0.9980212f, 0.0529362f, -0.0339330f),
@@ -390,7 +390,7 @@ class MatrixTest {
     @Test
     fun eulerZYXRotation() {
         assertArrayEquals(
-            Float3(1f, 2f, 3f).toFloatArray(),
+            Float3(radians(1f), radians(2f), radians(3f)).toFloatArray(),
             eulerAngles(
                 Mat4(
                     Float4(0.9980212f, 0.0523041f, -0.0348995f),
@@ -400,6 +400,72 @@ class MatrixTest {
                 RotationsOrder.ZYX
             ).toFloatArray()
         )
+    }
+
+    @Test
+    fun rotationConstructorsUseRadians() {
+        val axis = Float3(z = 1f)
+        val point = Float4(x = 1f, w = 1f)
+        val cases = listOf(
+            0f to Float4(x = 1f, w = 1f),
+            HALF_PI to Float4(y = 1f, w = 1f),
+            -HALF_PI to Float4(y = -1f, w = 1f),
+            PI to Float4(x = -1f, w = 1f),
+            TWO_PI to Float4(x = 1f, w = 1f),
+        )
+
+        for ((angle, expected) in cases) {
+            val matrices = listOf(rotation(axis, angle)) + RotationsOrder.entries.map { order ->
+                rotation(Float3(z = angle), order)
+            }
+
+            for (matrix in matrices) {
+                assertArrayEquals(expected.toFloatArray(), (matrix * point).toFloatArray())
+            }
+        }
+    }
+
+    @Test
+    fun eulerOverloadsUseRadiansForEveryOrder() {
+        val angles = Float3(0.25f, -0.4f, 0.6f)
+
+        for (order in RotationsOrder.entries) {
+            val matrix = rotation(angles, order)
+            val scalarMatrix = rotation(angles[order.yaw], angles[order.pitch], angles[order.roll], order)
+            val extracted = eulerAngles(matrix, order)
+            val memberExtracted = matrix.toEulerAngles(order)
+
+            assertMatEquals(scalarMatrix, matrix)
+            assertArrayEquals(angles.toFloatArray(), extracted.toFloatArray())
+            assertArrayEquals(angles.toFloatArray(), memberExtracted.toFloatArray())
+        }
+    }
+
+    @Test
+    fun matrixRotationPropertyReturnsRadians() {
+        val matrix = rotation(Float3(z = HALF_PI))
+
+        val angles = matrix.rotation
+
+        assertArrayEquals(Float3(z = HALF_PI).toFloatArray(), angles.toFloatArray())
+    }
+
+    @Test
+    fun matrixRotationPropertyReturnsRadiansAtSingularities() {
+        for (direction in listOf(-1f, 1f)) {
+            val matrix = Mat4(
+                Float4(x = 1f),
+                Float4(z = direction),
+                Float4(y = -direction),
+                Float4(w = 1f)
+            )
+
+            val angles = matrix.rotation
+
+            assertEquals(HALF_PI, angles.x.absoluteValue, ABSOLUTE_TOLERANCE)
+            assertEquals(0f, angles.y, ABSOLUTE_TOLERANCE)
+            assertEquals(0f, angles.z, ABSOLUTE_TOLERANCE)
+        }
     }
 
     @Test
@@ -577,14 +643,14 @@ class MatrixTest {
 
     @Test
     fun perspective() {
-        val result = perspective(fov = 60f, ratio = 2f, near = 0.1f, far = 100f)
+        val result = perspective(fov = radians(60f), ratio = 2f, near = 0.1f, far = 100f)
 
-        assertMatEquals(perspectiveRH(fov = 60f, ratio = 2f, near = 0.1f, far = 100f), result)
+        assertMatEquals(perspectiveRH(fov = radians(60f), ratio = 2f, near = 0.1f, far = 100f), result)
     }
 
     @Test
     fun perspectiveRH() {
-        val result = perspectiveRH(fov = 90f, ratio = 2f, near = 1f, far = 11f)
+        val result = perspectiveRH(fov = HALF_PI, ratio = 2f, near = 1f, far = 11f)
 
         assertMatEquals(
             Mat4(
@@ -599,7 +665,7 @@ class MatrixTest {
 
     @Test
     fun perspectiveLH() {
-        val result = perspectiveLH(fov = 90f, ratio = 2f, near = 1f, far = 11f)
+        val result = perspectiveLH(fov = HALF_PI, ratio = 2f, near = 1f, far = 11f)
 
         assertMatEquals(
             Mat4(
@@ -618,9 +684,9 @@ class MatrixTest {
 
         for ((near, far) in clippingPlanes) {
             val projections = listOf(
-                perspective(90f, 2f, near, far) to -1f,
-                perspectiveRH(90f, 2f, near, far) to -1f,
-                perspectiveLH(90f, 2f, near, far) to 1f,
+                perspective(HALF_PI, 2f, near, far) to -1f,
+                perspectiveRH(HALF_PI, 2f, near, far) to -1f,
+                perspectiveLH(HALF_PI, 2f, near, far) to 1f,
             )
 
             for ((projection, direction) in projections) {
@@ -643,9 +709,9 @@ class MatrixTest {
     @Test
     fun perspectiveClipsPointsOutsideDepthRange() {
         val projections = listOf(
-            perspective(60f, 1f, 1f, 10f) to -1f,
-            perspectiveRH(60f, 1f, 1f, 10f) to -1f,
-            perspectiveLH(60f, 1f, 1f, 10f) to 1f,
+            perspective(radians(60f), 1f, 1f, 10f) to -1f,
+            perspectiveRH(radians(60f), 1f, 1f, 10f) to -1f,
+            perspectiveLH(radians(60f), 1f, 1f, 10f) to 1f,
         )
 
         for ((projection, direction) in projections) {
@@ -668,9 +734,9 @@ class MatrixTest {
         val far = 20f
 
         val viewProjections = listOf(
-            perspective(60f, 2f, near, far) * lookAt(eye, target),
-            perspectiveRH(60f, 2f, near, far) * lookAtRH(eye, target),
-            perspectiveLH(60f, 2f, near, far) * lookAtLH(eye, target),
+            perspective(radians(60f), 2f, near, far) * lookAt(eye, target),
+            perspectiveRH(radians(60f), 2f, near, far) * lookAtRH(eye, target),
+            perspectiveLH(radians(60f), 2f, near, far) * lookAtLH(eye, target),
         )
 
         for (viewProjection in viewProjections) {
