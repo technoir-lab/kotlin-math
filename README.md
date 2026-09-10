@@ -17,6 +17,16 @@ val n = normalize(v)
 
 This project supports multi-platform thanks to [ekgame](https://github.com/ekgame).
 
+## Caveats
+
+This fork differs from the [upstream implementation](https://github.com/romainguy/kotlin-math/blob/main/src/commonMain/kotlin/dev/romainguy/kotlin/math/Matrix.kt):
+
+- `lookAt` returns a right-handed world-to-camera view matrix; upstream returns
+  a camera-to-world transform. Explicit `lookAtRH` and `lookAtLH` variants are available.
+- `perspective` defaults to right-handed coordinates and maps near/far depth to
+  `[0, 1]`; upstream uses left-handed coordinates and `[-1, 1]`. Both
+  `perspectiveRH` and `perspectiveLH` use `[0, 1]` depth. FOV remains in degrees.
+
 ## Maven
 
 ```gradle
@@ -206,8 +216,20 @@ val cameraSpacePoint = view * Float4(worldSpacePoint, 1.0f)
 ```
 
 The eye and target must differ, and the up vector must be nonzero and not
-parallel to the viewing direction. The existing `perspective` function uses
-left-handed coordinates and pairs with `lookAtLH`.
+parallel to the viewing direction.
+
+### Perspective projections
+
+`perspective` and `perspectiveRH` create right-handed projections and pair with
+`lookAt` and `lookAtRH`. `perspectiveLH` pairs with `lookAtLH`. All three map the
+near and far clipping planes to normalized device depths 0 and 1, respectively.
+The vertical field of view is in degrees, and the aspect ratio is width / height.
+
+```kotlin
+val projection = perspective(fov = 60.0f, ratio = 16.0f / 9.0f, near = 0.1f, far = 100.0f)
+val clipSpacePoint = projection * view * Float4(worldSpacePoint, 1.0f)
+val normalizedDevicePoint = clipSpacePoint.xyz / clipSpacePoint.w
+```
 
 ## Quaternions and rotations
 
