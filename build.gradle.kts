@@ -7,11 +7,8 @@ plugins {
     id("com.vanniktech.maven.publish")
 }
 
-val GROUP: String by project
-val VERSION_NAME: String by project
-
-group = GROUP
-version = VERSION_NAME
+group = providers.gradleProperty("GROUP").get()
+version = providers.gradleProperty("VERSION_NAME").get()
 
 kotlin {
     jvm()
@@ -81,12 +78,12 @@ dokka {
     }
 }
 
-val dokkaGeneratePublicationHtml by tasks.getting(DokkaGeneratePublicationTask::class)
+val dokkaGeneratePublicationHtml = tasks.named<DokkaGeneratePublicationTask>("dokkaGeneratePublicationHtml")
 
-val javadocJar by tasks.registering(Jar::class) {
+val javadocJar = tasks.register<Jar>("javadocJar") {
     dependsOn(dokkaGeneratePublicationHtml)
     archiveClassifier.set("javadoc")
-    from(dokkaGeneratePublicationHtml.outputDirectory)
+    from(dokkaGeneratePublicationHtml.flatMap { it.outputDirectory })
 }
 
 mavenPublishing {
