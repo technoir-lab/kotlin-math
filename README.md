@@ -191,6 +191,24 @@ You can also use the invoke operator to access elements in row-major mode with
 v = myMat4(2, 3) // equivalent to myMat4[2, 1]
 ```
 
+### Camera view matrices
+
+`lookAt` and `lookAtRH` create right-handed world-to-camera view matrices, with
+the camera looking along negative Z. `lookAtLH` uses positive Z instead. All
+three functions default to Z-up and follow GLM's view-matrix formulas.
+
+```kotlin
+val eye = Float3(3.0f, 4.0f, 5.0f)
+val target = Float3()
+val view = lookAt(eye, target) // Same as lookAtRH(eye, target)
+val leftHandedView = lookAtLH(eye, target)
+val cameraSpacePoint = view * Float4(worldSpacePoint, 1.0f)
+```
+
+The eye and target must differ, and the up vector must be nonzero and not
+parallel to the viewing direction. The existing `perspective` function uses
+left-handed coordinates and pairs with `lookAtLH`.
+
 ## Quaternions and rotations
 
 Construct a Euler angles rotation matrix using per-axis angles in degrees:
