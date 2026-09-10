@@ -32,18 +32,20 @@ kotlin {
     // Tier 2
     linuxArm64()
     linuxX64()
-    macosX64()
-    iosX64()
     watchosArm64()
-    watchosDeviceArm64()
     watchosSimulatorArm64()
-    watchosX64()
 
     // Tier 3
     androidNativeArm64()
+    iosX64()
+    watchosDeviceArm64()
     mingwX64 {
         binaries.findTest(DEBUG)!!.linkerOpts = mutableListOf("-Wl,--subsystem,windows")
     }
+
+    // Deprecated targets
+    macosX64()
+    watchosX64()
 
     sourceSets {
         commonMain {
