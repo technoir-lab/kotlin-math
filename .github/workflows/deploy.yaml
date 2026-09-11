@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
 
     permissions:
-      contents: read
+      contents: write # Required for creating release
 
     steps:
       - name: Checkout
@@ -45,3 +45,9 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: ./gradlew publishToMavenCentral -PVERSION_NAME="${GITHUB_REF_NAME#v}"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3.0.3
+        if: github.ref_type == 'tag'
+        with:
+          generate_release_notes: true
