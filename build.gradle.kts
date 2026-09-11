@@ -66,7 +66,7 @@ dokka {
         sourceLink {
             localDirectory.set(project.file("src/commonMain/kotlin"))
             // URL showing where the source code can be accessed through the web browser
-            remoteUrl.set(uri("https://github.com/romainguy/kotlin-math/blob/main/${project.name}/src/commonMain/kotlin"))
+            remoteUrl.set(uri("https://github.com/technoir-lab/kotlin-math/blob/main/src/commonMain/kotlin"))
             // Suffix which is used to append the line number to the URL. Use #L for GitHub
             remoteLineSuffix.set("#L")
         }

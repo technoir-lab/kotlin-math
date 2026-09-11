@@ -10,7 +10,7 @@ concurrency:
 jobs:
   maven-central:
     name: Maven Central
-    runs-on: macos-latest
+    runs-on: macos-26
 
     permissions:
       contents: write # Required for creating release
@@ -51,3 +51,54 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           generate_release_notes: true
+
+  documentation:
+    name: Documentation
+    runs-on: macos-26
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6.0.0
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6.3.0
+        with:
+          cache-provider: basic
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6.0.0
+
+      - name: Cache Kotlin/Native toolchains
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('settings.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Generate documentation
+        run: ./gradlew dokkaGeneratePublicationHtml -PVERSION_NAME="${GITHUB_REF_NAME#v}"
+
+      - name: Upload documentation
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: build/dokka/html
+
+      - name: Deploy documentation to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1
