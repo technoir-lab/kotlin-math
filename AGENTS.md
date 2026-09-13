@@ -13,7 +13,7 @@ This single-module Kotlin Multiplatform library provides GLSL-inspired graphics 
 
 ## Build, Test, and Development Commands
 
-Use the checked-in Gradle wrapper from the repository root. The Gradle daemon and CI use JDK 21.
+Use the checked-in Gradle wrapper from the repository root. The Gradle daemon uses JDK 25 and CI uses Corretto JDK 25. JVM compilation and tests use the JDK 21 toolchain.
 
 - `./gradlew build --continue` builds and checks the library, matching CI on macOS.
 - `./gradlew jvmTest` runs shared tests on JVM for quick feedback.

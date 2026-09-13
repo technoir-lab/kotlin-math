@@ -24,8 +24,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v6.0.0
         with:
-          java-version: "21"
-          distribution: "temurin"
+          java-version: "25"
+          distribution: "corretto"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6.3.0
