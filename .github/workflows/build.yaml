@@ -33,7 +33,7 @@ jobs:
           cache-provider: basic
 
       - name: Set up KMP
-        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.0.0
+        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.2.1
 
       - name: Build with Gradle
         run: ./gradlew build --continue
