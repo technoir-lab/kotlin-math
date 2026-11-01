@@ -31,7 +31,7 @@ jobs:
           cache-provider: basic
 
       - name: Set up KMP
-        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.0.0
+        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.1.2
 
       - name: Publish to Maven Central
         env:
@@ -79,7 +79,7 @@ jobs:
         uses: actions/configure-pages@v6.0.0
 
       - name: Set up KMP
-        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.0.0
+        uses: technoir-lab/actions/setup-kotlin-multiplatform@v1.1.2
 
       - name: Generate documentation
         run: ./gradlew dokkaGeneratePublicationHtml -PVERSION_NAME="${GITHUB_REF_NAME#v}"
